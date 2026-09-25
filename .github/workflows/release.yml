@@ -8,6 +8,8 @@ on:
 jobs:
   build-release:
     runs-on: windows-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,4 +33,4 @@ jobs:
         with:
           files: WinLANTransfer-*-win-x64.zip
           generate_release_notes: true
-          overwrite: true
+          overwrite_files: true
