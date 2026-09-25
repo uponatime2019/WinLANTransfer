@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Window
+    x:Class="WinLANTransfer.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:WinLANTransfer">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <NavigationView
+            x:Name="MainNav"
+            IsSettingsVisible="False"
+            ItemInvoked="MainNav_ItemInvoked"
+            PaneDisplayMode="Left"
+            OpenPaneLength="150"
+            IsPaneOpen="True"
+            IsPaneToggleButtonVisible="False"
+            IsBackButtonVisible="Collapsed">
+            <NavigationView.MenuItems>
+                <NavigationViewItem
+                    x:Name="SendNavItem"
+                    Content="Send"
+                    Tag="SendTab">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE72D;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem
+                    x:Name="ReceiveNavItem"
+                    Content="Receive"
+                    Tag="ReceiveTab">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE896;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem
+                    x:Name="HistoryNavItem"
+                    Content="Transfers"
+                    Tag="HistoryTab">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8D5;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+
+            <!--  Main Content Area  -->
+            <Grid Padding="24">
+                <!--  Send Tab  -->
+                <Grid x:Name="SendTabContent" Visibility="Visible">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!--  Top Bar Info  -->
+                    <StackPanel
+                        Margin="0,0,0,16"
+                        Orientation="Horizontal"
+                        Spacing="12">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="24"
+                            FontWeight="Bold"
+                            Text="⚡ Win LAN Transfer" />
+                        <Border
+                            Padding="12,6"
+                            VerticalAlignment="Center"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            CornerRadius="8">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon
+                                    FontSize="14"
+                                    Foreground="{ThemeResource AccentAAFillColorDefaultBrush}"
+                                    Glyph="&#xE839;" />
+                                <TextBlock
+                                    x:Name="TxtLocalIp"
+                                    FontWeight="SemiBold"
+                                    Text="IP: 127.0.0.1:53317" />
+                            </StackPanel>
+                        </Border>
+                        <Button
+                            VerticalAlignment="Center"
+                            Click="BtnRefreshDevices_Click"
+                            Content="Scan LAN">
+                            <Button.ContentTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <FontIcon FontSize="14" Glyph="&#xE72C;" />
+                                        <TextBlock Text="Scan LAN" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </Button.ContentTemplate>
+                        </Button>
+                    </StackPanel>
+
+                    <!--  Action Buttons  -->
+                    <StackPanel
+                        Grid.Row="1"
+                        Margin="0,0,0,16"
+                        Orientation="Horizontal"
+                        Spacing="12">
+                        <Button
+                            Click="BtnPickFile_Click"
+                            Content="Send Files"
+                            Style="{StaticResource AccentButtonStyle}">
+                            <Button.ContentTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <FontIcon FontSize="16" Glyph="&#xE8E5;" />
+                                        <TextBlock Text="Send Files" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </Button.ContentTemplate>
+                        </Button>
+                        <Button Click="BtnSendText_Click" Content="Send Text / URL">
+                            <Button.ContentTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <FontIcon FontSize="16" Glyph="&#xE8C8;" />
+                                        <TextBlock Text="Send Text / URL" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </Button.ContentTemplate>
+                        </Button>
+                    </StackPanel>
+
+                    <!--  Devices & Drop Zone Grid  -->
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="1*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!--  Devices List  -->
+                        <Border
+                            Grid.Column="0"
+                            Margin="0,0,12,0"
+                            Padding="16"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            CornerRadius="12">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    Margin="0,0,0,12"
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Text="Nearby Devices on Local Network" />
+
+                                <ListView
+                                    x:Name="LstDevices"
+                                    Grid.Row="1"
+                                    SelectionChanged="LstDevices_SelectionChanged">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Padding="12,8" ColumnSpacing="12">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <Border
+                                                    Width="40"
+                                                    Height="40"
+                                                    VerticalAlignment="Center"
+                                                    Background="{ThemeResource SystemAccentColor}"
+                                                    CornerRadius="20">
+                                                    <FontIcon
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        FontSize="20"
+                                                        Foreground="White"
+                                                        Glyph="&#xE7F8;" />
+                                                </Border>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock
+                                                        FontSize="15"
+                                                        FontWeight="SemiBold"
+                                                        Text="{Binding DeviceName}" />
+                                                    <TextBlock
+                                                        FontSize="12"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Text="{Binding IpAddress}" />
+                                                </StackPanel>
+                                                <Border
+                                                    Grid.Column="2"
+                                                    Padding="6,2"
+                                                    VerticalAlignment="Center"
+                                                    Background="{ThemeResource SystemFillColorSuccessBrush}"
+                                                    CornerRadius="4">
+                                                    <TextBlock
+                                                        FontSize="11"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="White"
+                                                        Text="Online" />
+                                                </Border>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+
+                                <!--  Empty State  -->
+                                <StackPanel
+                                    x:Name="EmptyDevicesPanel"
+                                    Grid.Row="1"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Spacing="8">
+                                    <FontIcon
+                                        FontSize="48"
+                                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                        Glyph="&#xE774;" />
+                                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Scanning for nearby PCs &amp; Devices..." />
+                                    <TextBlock
+                                        FontSize="12"
+                                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                        Text="Make sure Win LAN Transfer is running on target PC" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!--  Drag & Drop Zone  -->
+                        <Border
+                            x:Name="DropZone"
+                            Grid.Column="1"
+                            Padding="20"
+                            AllowDrop="True"
+                            Background="{ThemeResource LayerFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource SystemAccentColor}"
+                            BorderThickness="2"
+                            CornerRadius="12"
+                            DragOver="DropZone_DragOver"
+                            DragLeave="DropZone_DragLeave"
+                            Drop="DropZone_Drop">
+                            <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <!-- Default Panel -->
+                                <StackPanel
+                                    x:Name="DropZoneDefaultPanel"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Spacing="12"
+                                    Visibility="Visible">
+                                    <FontIcon
+                                        x:Name="DropZoneIcon"
+                                        FontSize="48"
+                                        Foreground="{ThemeResource AccentAAFillColorDefaultBrush}"
+                                        Glyph="&#xE759;" />
+                                    <TextBlock
+                                        x:Name="DropZoneTitleText"
+                                        HorizontalAlignment="Center"
+                                        FontSize="16"
+                                        FontWeight="SemiBold"
+                                        Text="Drag &amp; Drop Files Here" />
+                                    <TextBlock
+                                        x:Name="DropZoneSubText"
+                                        FontSize="12"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="Select a device on left then drop files here to send instantly"
+                                        TextAlignment="Center"
+                                        TextWrapping="Wrap" />
+                                    <Button
+                                        x:Name="BtnBrowseFileInsideDrop"
+                                        Margin="0,8,0,0"
+                                        HorizontalAlignment="Center"
+                                        Click="BtnPickFile_Click"
+                                        Style="{StaticResource AccentButtonStyle}">
+                                        <Button.ContentTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <FontIcon FontSize="14" Glyph="&#xE8E5;" />
+                                                    <TextBlock Text="Browse File" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </Button.ContentTemplate>
+                                    </Button>
+                                </StackPanel>
+
+                                <!-- Active Dropped State Panel -->
+                                <StackPanel
+                                    x:Name="DropZoneActivePanel"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Spacing="10"
+                                    Visibility="Collapsed">
+                                    <FontIcon
+                                        FontSize="48"
+                                        Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                        Glyph="&#xE73E;" />
+                                    <TextBlock
+                                        x:Name="TxtDroppedStatusTitle"
+                                        HorizontalAlignment="Center"
+                                        FontSize="16"
+                                        FontWeight="Bold"
+                                        Text="Files Queued for Transfer" />
+                                    <TextBlock
+                                        x:Name="TxtDroppedStatusDetail"
+                                        HorizontalAlignment="Center"
+                                        FontSize="12"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        TextAlignment="Center"
+                                        TextWrapping="Wrap" />
+                                    <Button
+                                        Margin="0,6,0,0"
+                                        HorizontalAlignment="Center"
+                                        Click="BtnPickFile_Click"
+                                        Content="Send More Files" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+
+                <!--  Receive Tab  -->
+                <Grid x:Name="ReceiveTabContent" Visibility="Collapsed">
+                    <StackPanel
+                        MaxWidth="600"
+                        HorizontalAlignment="Left"
+                        Spacing="16">
+                        <TextBlock
+                            FontSize="24"
+                            FontWeight="Bold"
+                            Text="📥 Receive Files &amp; Text" />
+
+                        <Border
+                            Padding="20"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            CornerRadius="12">
+                            <StackPanel Spacing="12">
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Text="Mobile Web Receiver Portal" />
+                                <TextBlock
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="Send files from any Mobile Phone or Tablet without installing an app!"
+                                    TextWrapping="Wrap" />
+
+                                <TextBox
+                                    x:Name="TxtWebPortalUrl"
+                                    Header="Web Portal Link (Open in Phone Browser):"
+                                    IsReadOnly="True" />
+                                <Button Click="BtnCopyWebLink_Click" Content="Copy Web Link" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border
+                            Padding="20"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            CornerRadius="12">
+                            <StackPanel Spacing="12">
+                                <TextBlock
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    Text="Download Directory" />
+                                <TextBox x:Name="TxtSaveDir" IsReadOnly="True" />
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button Click="BtnOpenDownloadsFolder_Click" Content="Open Folder" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+
+                <!--  Transfers / History Tab  -->
+                <Grid x:Name="HistoryTabContent" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock
+                        Margin="0,0,0,16"
+                        FontSize="24"
+                        FontWeight="Bold"
+                        Text="📊 Transfers &amp; Activity" />
+
+                    <ListView x:Name="LstTransfers" Grid.Row="1" IsItemClickEnabled="True" ItemClick="LstTransfers_ItemClick">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Padding="12,8" ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon
+                                        VerticalAlignment="Center"
+                                        FontSize="24"
+                                        Glyph="&#xE8E5;" />
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock FontWeight="SemiBold" Text="{Binding FileName}" />
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock
+                                                FontSize="12"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Text="{Binding Direction}" />
+                                            <TextBlock
+                                                FontSize="12"
+                                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                                Text="•" />
+                                            <TextBlock
+                                                FontSize="12"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Text="{Binding FormattedSize}" />
+                                            <TextBlock
+                                                FontSize="12"
+                                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                                Text="•" />
+                                            <TextBlock
+                                                FontSize="12"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Text="{Binding PeerName}" />
+                                        </StackPanel>
+                                        <ProgressBar
+                                            Margin="0,4,0,0"
+                                            Maximum="100"
+                                            Value="{Binding Progress}" />
+                                    </StackPanel>
+                                    <TextBlock
+                                        Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        FontWeight="SemiBold"
+                                        Text="{Binding Status}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </Grid>
+        </NavigationView>
+
+        <!--  Send Text Content Dialog  -->
+        <ContentDialog
+            x:Name="SendTextDialog"
+            Title="Send Text / URL to Peer"
+            CloseButtonText="Cancel"
+            PrimaryButtonClick="SendTextDialog_PrimaryButtonClick"
+            PrimaryButtonText="Send">
+            <StackPanel Spacing="12">
+                <TextBox
+                    x:Name="TxtSendInput"
+                    Height="100"
+                    AcceptsReturn="True"
+                    Header="Enter message or link:"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+        </ContentDialog>
+    </Grid>
+</Window>
